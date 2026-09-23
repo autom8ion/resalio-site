@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resalio</title>
+<meta name="description" content="Scan an item at the thrift store and know in seconds if it flips: sold prices, sell-through, profit after fees, and a ready-to-paste listing.">
+<style>
+  :root{--bg:#faf9f5;--fg:#141413;--muted:#60646C;--card:#ffffff;--line:#e6e4dd;--accent:#0A5FD1;--ok:#1B8A4A}
+  @media (prefers-color-scheme:dark){:root{--bg:#141413;--fg:#f0f0f3;--muted:#B0B4BA;--card:#1d1e21;--line:#2e3135;--accent:#3B8CFF}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+  main{max-width:640px;margin:0 auto;padding:56px 16px 80px}
+  .brand{font-weight:700;letter-spacing:-0.01em;font-size:20px}
+  h1{font-size:clamp(34px,7vw,52px);line-height:1.05;letter-spacing:-0.02em;margin:40px 0 16px;font-weight:700}
+  .lede{font-size:20px;color:var(--muted);margin:0 0 32px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px}
+  .demo{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:0 0 8px}
+  .stat b{display:block;font-size:24px;letter-spacing:-0.01em}
+  .stat span{color:var(--muted);font-size:14px}
+  .profit{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
+  .profit b{color:var(--ok);font-size:26px}
+  .profit span{color:var(--muted);font-size:14px}
+  ul{padding-left:20px;margin:28px 0}
+  li{margin:8px 0}
+  form{display:flex;flex-direction:column;gap:12px;margin-top:28px}
+  label{font-size:14px;color:var(--muted)}
+  input,select,button{font:inherit;border-radius:12px;padding:14px 16px;border:1px solid var(--line);background:var(--card);color:var(--fg);width:100%}
+  button{background:var(--accent);color:#fff;border:0;font-weight:600;cursor:pointer;min-height:48px}
+  button:disabled{opacity:.6}
+  .fine{font-size:13px;color:var(--muted)}
+  .ok{color:var(--ok);font-weight:600}
+  .err{color:#C53030}
+  footer{margin-top:56px;font-size:13px;color:var(--muted)}
+  footer a{color:inherit}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">Resalio</div>
+  <h1>Scan it. Know if it flips.</h1>
+  <p class="lede">Point your phone at anything on the thrift-store shelf. In about 15 seconds you get what it actually sold for, how fast it sells, your profit after fees, and a listing you can paste straight into eBay.</p>
+
+  <div class="card" aria-label="Example result">
+    <div style="font-size:14px;color:var(--muted);margin-bottom:10px">Example · Patagonia Synchilla Snap-T fleece, men's L</div>
+    <div class="demo">
+      <div class="stat"><b>$58</b><span>avg sold</span></div>
+      <div class="stat"><b>71%</b><span>sell-through</span></div>
+      <div class="stat"><b>~8 days</b><span>to sell</span></div>
+    </div>
+    <div class="profit"><span>Paid $9 · eBay fees $8</span><b>+$41 profit</b></div>
+  </div>
+
+  <ul>
+    <li><strong>Sold prices, not asking prices.</strong> Comps come from what buyers actually paid.</li>
+    <li><strong>Sell-through rate and days to sell,</strong> so you skip the stuff that sits for months.</li>
+    <li><strong>Profit after fees</strong> for eBay, Poshmark, Mercari or Depop. Type what you paid, see what you keep.</li>
+    <li><strong>Listing draft in one tap:</strong> 80-character title, item specifics, honest description.</li>
+  </ul>
+
+  <form id="f">
+    <label for="email">Get early access. Free during the beta.</label>
+    <input id="email" type="email" name="email" placeholder="you@example.com" required autocomplete="email">
+    <select id="sells" name="sells_on" aria-label="Where do you sell?">
+      <option value="">Where do you sell? (optional)</option>
+      <option>eBay</option><option>Poshmark</option><option>Mercari</option><option>Depop</option><option>Facebook Marketplace</option><option>Whatnot</option><option>Not selling yet</option>
+    </select>
+    <button id="btn" type="submit">Join the waitlist</button>
+    <div id="msg" class="fine" role="status" aria-live="polite">No spam. One email when the beta opens.</div>
+  </form>
+
+  <footer>
+    <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="mailto:avzrule@gmail.com">Contact</a>
+  </footer>
+</main>
+<script>
+  // Publishable key: safe to ship. The table allows inserts only; nothing can be read with it.
+  const URL_ = 'https://uswyaqwmruanmmaalwuk.supabase.co/rest/v1/waitlist';
+  const KEY = 'sb_publishable_PK2lTti83_binPx4vBzOUw_Ot03eM29';
+  const f = document.getElementById('f'), msg = document.getElementById('msg'), btn = document.getElementById('btn');
+  f.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true; msg.className = 'fine'; msg.textContent = 'Saving…';
+    const body = { email: f.email.value.trim().toLowerCase(), sells_on: f.sells_on.value || null, source: new URLSearchParams(location.search).get('src') || document.referrer || null };
+    try {
+      const r = await fetch(URL_, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(body) });
+      if (r.ok || r.status === 409) { msg.className = 'fine ok'; msg.textContent = "You're on the list. Thanks!"; f.email.value = ''; }
+      else { throw new Error(await r.text()); }
+    } catch (err) {
+      msg.className = 'fine err'; msg.textContent = 'Something went wrong. Email avzrule@gmail.com and we will add you.';
+    } finally { btn.disabled = false; }
+  });
+</script>
+</body>
+</html>
